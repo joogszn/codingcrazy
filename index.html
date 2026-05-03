@@ -89,6 +89,15 @@ footer{background:var(--black);border-top:1px solid var(--bw);padding:60px 48px 
 .mstmt{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:clamp(1.6rem,3.5vw,2.6rem);letter-spacing:0.03em;line-height:1.15;color:var(--text);margin-bottom:20px}
 .mstmt .c{color:var(--cyan)}.mstmt .p{color:var(--purple)}
 .msub{font-size:0.9rem;color:var(--muted2);line-height:1.85;max-width:520px;margin:0 auto}
+
+.ac.pa{background:linear-gradient(155deg,rgba(212,175,55,0.06) 0%,rgba(17,19,24,0.95) 60%);border-color:rgba(212,175,55,0.2)}
+.ac.pa:hover{border-color:rgba(212,175,55,0.55);box-shadow:0 30px 60px rgba(212,175,55,0.18)}
+.ac.pa .aico{filter:drop-shadow(0 0 18px rgba(212,175,55,0.5))}
+.ac.pa .aname{background:linear-gradient(110deg,#fff 0%,#E8C766 60%,#fff 100%);background-size:200% auto;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;animation:shimmerPa 6s ease-in-out infinite}
+@keyframes shimmerPa{0%{background-position:-200% center}100%{background-position:200% center}}
+
+@keyframes htitleShimmer{0%{background-position:-200% center}100%{background-position:200% center}}
+.htitle .c{background:linear-gradient(110deg,#00d4ff 0%,#00d4ff 30%,#fff 50%,#00d4ff 70%,#00d4ff 100%);background-size:200% auto;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;animation:htitleShimmer 8s ease-in-out infinite}
 </style>
 </head>
 <body>
@@ -103,6 +112,7 @@ footer{background:var(--black);border-top:1px solid var(--bw);padding:60px 48px 
     <a class="nav-link" href="sidequests/">SideQuests</a>
     <a class="nav-link" href="sortr.html">Sortr<span class="cs-badge">Soon</span></a>
     <a class="nav-link" href="arc.html">ARC<span class="cs-badge">Soon</span></a>
+    <a class="nav-link" href="pape/">Pape<span class="cs-badge">Soon</span></a>
     <a class="nav-cta" href="sidequests/#join">Get Early Access</a>
   </div>
 </nav>
@@ -138,6 +148,14 @@ footer{background:var(--black);border-top:1px solid var(--bw);padding:60px 48px 
         <p class="adesc">Your entire audio library, organized the way producers actually think — not the way file systems do.</p>
         <div class="aft"><span class="ab ab-soon">Coming Soon</span><span class="aarrow">→</span></div>
       </a>
+      <a class="ac pa" href="pape/">
+        <span class="aico">🪙</span>
+        <div class="atag to">Music · Mac</div>
+        <div class="aname">Pape</div>
+        <div class="atagline to">Schedule A in minutes.</div>
+        <p class="adesc">Catalog, splits, and Schedule A export for independent artists. Get ya pape.</p>
+        <div class="aft"><span class="ab ab-soon">Coming Soon</span><span class="aarrow">→</span></div>
+      </a>
     </div>
   </div>
 </section>
@@ -158,6 +176,7 @@ footer{background:var(--black);border-top:1px solid var(--bw);padding:60px 48px 
       <a href="sidequests/">SideQuests</a>
       <a href="sortr.html">Sortr</a>
       <a href="arc.html">ARC</a>
+      <a href="pape/">Pape</a>
     </div></div>
     <div><div class="fcol-t">Company</div><div class="flinks">
       <a href="#">About</a><a href="#">Blog</a><a href="#">Contact</a>
@@ -194,4 +213,67 @@ function signup(id,btn){
   if(!em||!em.includes('@')){inp.style.borderColor='#ef4444';inp.placeholder='Enter a valid email';setTimeout(()=>{inp.style.borderColor='';inp.placeholder='your@email.com';},2500);return;}
   btn.textContent="You're on the list ✓";btn.style.opacity='0.75';inp.value='';inp.placeholder='Welcome! 🎉';
 }</script>
+
+<canvas id="cc-particles" style="position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:1"></canvas>
+<script>
+(function(){
+  // 3D tilt on app cards
+  document.querySelectorAll('.ac').forEach(function(card){
+    card.style.transformStyle = 'preserve-3d';
+    card.style.transition = 'transform 0.18s ease-out, border-color 0.3s, box-shadow 0.3s';
+    card.style.willChange = 'transform';
+    card.parentElement && (card.parentElement.style.perspective = '1400px');
+    card.addEventListener('mousemove', function(e){
+      var r = card.getBoundingClientRect();
+      var x = (e.clientX - r.left) / r.width;
+      var y = (e.clientY - r.top) / r.height;
+      var rx = (y - 0.5) * -8;
+      var ry = (x - 0.5) * 10;
+      card.style.transform = 'rotateX(' + rx + 'deg) rotateY(' + ry + 'deg) translateZ(0)';
+    });
+    card.addEventListener('mouseleave', function(){ card.style.transform = ''; });
+  });
+
+  // Gold + cyan particle field (subtle, additive to matrix)
+  var pc = document.getElementById('cc-particles');
+  if (!pc || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  var pctx = pc.getContext('2d');
+  function sz(){ pc.width = innerWidth; pc.height = innerHeight; }
+  sz(); addEventListener('resize', sz);
+  var ps = Array.from({length: 50}, function(){
+    return {
+      x: Math.random() * innerWidth,
+      y: Math.random() * innerHeight,
+      vy: -0.1 - Math.random() * 0.35,
+      vx: (Math.random() - 0.5) * 0.12,
+      r: 0.5 + Math.random() * 1.4,
+      a: 0.12 + Math.random() * 0.4,
+      hue: Math.random() < 0.5 ? 'gold' : 'cyan'
+    };
+  });
+  function tick(){
+    pctx.clearRect(0, 0, pc.width, pc.height);
+    for (var i = 0; i < ps.length; i++){
+      var p = ps[i];
+      p.x += p.vx; p.y += p.vy;
+      if (p.y < -10) { p.y = pc.height + 10; p.x = Math.random() * pc.width; }
+      if (p.x < -10) p.x = pc.width + 10;
+      if (p.x > pc.width + 10) p.x = -10;
+      pctx.beginPath();
+      pctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      if (p.hue === 'gold') {
+        pctx.fillStyle = 'rgba(212,175,55,' + p.a + ')';
+        pctx.shadowColor = 'rgba(212,175,55,0.6)';
+      } else {
+        pctx.fillStyle = 'rgba(0,212,255,' + (p.a * 0.55) + ')';
+        pctx.shadowColor = 'rgba(0,212,255,0.45)';
+      }
+      pctx.shadowBlur = 6;
+      pctx.fill();
+    }
+    requestAnimationFrame(tick);
+  }
+  tick();
+})();
+</script>
 </body></html>
