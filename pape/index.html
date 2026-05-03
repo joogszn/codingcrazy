@@ -545,16 +545,16 @@ const particles = Array.from({length: isMobile ? 22 : 28}, () => ({
 }));
 
 // Subtle gold coin layer — very faint, slow-spinning, rare
-const coinCount = isMobile ? 4 : 7;
+const coinCount = isMobile ? 5 : 9;
 const coins = Array.from({length: coinCount}, () => ({
   x: Math.random() * window.innerWidth,
   y: Math.random() * window.innerHeight,
   vy: -0.06 - Math.random() * 0.10,
   vx: (Math.random() - 0.5) * 0.05,
-  r: 4 + Math.random() * 3,
+  r: 5 + Math.random() * 4,
   rot: Math.random() * Math.PI,
   rotSpeed: 0.005 + Math.random() * 0.012,
-  a: 0.05 + Math.random() * 0.06,  // very faint
+  a: 0.10 + Math.random() * 0.10,  // visible without squinting
 }));
 
 function drawParticles() {
