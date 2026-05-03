@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Privacy — Pape | Coding Crazy</title>
+<meta name="description" content="Privacy policy for Pape, the music-industry paperwork tool by Coding Crazy. No data collection. Everything stays local on your Mac."/>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--black:#000;--bg2:#08090d;--card:#111318;--cyan:#00d4ff;--purple:#b94fff;--green:#22c55e;--bw:rgba(255,255,255,0.06);--bc:rgba(0,212,255,0.12);--bp:rgba(185,79,255,0.15);--text:#e8edf2;--muted:#5a6472;--muted2:#8a94a6}
+html{scroll-behavior:smooth}
+body{background:var(--black);color:var(--text);font-family:'Inter',sans-serif;font-weight:300;min-height:100vh;-webkit-font-smoothing:antialiased}
+body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,0.015) 3px,rgba(0,0,0,0.015) 6px);pointer-events:none;z-index:9990}
+
+nav{position:fixed;top:0;left:0;right:0;z-index:1000;display:flex;align-items:center;justify-content:space-between;padding:14px 48px;background:rgba(0,0,0,0.94);backdrop-filter:blur(20px);border-bottom:1px solid var(--bc)}
+.nav-logo{display:flex;align-items:center;gap:10px;text-decoration:none}
+.nav-logo-txt{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:1.05rem;letter-spacing:0.18em;color:var(--cyan);text-transform:uppercase}
+.nav-link{font-size:0.8rem;color:var(--muted2);text-decoration:none;letter-spacing:0.04em;padding:7px 14px;border-radius:5px;transition:all 0.2s}
+.nav-link:hover{color:var(--cyan)}
+
+.bg-glow{position:fixed;width:800px;height:800px;border-radius:50%;background:rgba(185,79,255,0.06);filter:blur(140px);top:30%;left:50%;transform:translate(-50%,-50%);pointer-events:none;z-index:0}
+.bg-grid{position:fixed;inset:0;background-image:linear-gradient(rgba(255,255,255,0.02) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.02) 1px,transparent 1px);background-size:52px 52px;mask-image:radial-gradient(ellipse 90% 85% at 50% 50%,black 20%,transparent 100%);pointer-events:none;z-index:0}
+
+main{position:relative;z-index:1;max-width:760px;margin:0 auto;padding:140px 32px 80px}
+.kicker{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--bp);border-radius:100px;padding:7px 18px;font-family:'Rajdhani',sans-serif;font-size:0.65rem;letter-spacing:0.22em;text-transform:uppercase;color:var(--purple);margin-bottom:22px;background:rgba(185,79,255,0.06)}
+.kicker-dot{width:6px;height:6px;border-radius:50%;background:var(--purple)}
+h1{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:clamp(2.6rem,6vw,4.2rem);line-height:0.95;letter-spacing:0.04em;text-transform:uppercase;margin-bottom:14px;color:var(--text)}
+.subtitle{font-family:'Rajdhani',sans-serif;font-weight:600;font-size:0.85rem;letter-spacing:0.18em;text-transform:uppercase;color:var(--cyan);margin-bottom:36px}
+
+.lede{background:rgba(0,212,255,0.04);border-left:2px solid var(--cyan);padding:22px 26px;border-radius:0 8px 8px 0;margin:32px 0;font-size:1.02rem;color:var(--text);line-height:1.7}
+.lede strong{color:var(--cyan);font-weight:600;letter-spacing:0.02em}
+
+h2{font-family:'Rajdhani',sans-serif;font-weight:600;font-size:1.05rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--cyan);margin-top:48px;margin-bottom:14px}
+p{margin-bottom:16px;color:var(--muted2);line-height:1.85;font-size:0.95rem}
+p strong{color:var(--text);font-weight:500}
+ul{list-style:none;margin:12px 0 24px}
+ul li{position:relative;padding-left:22px;margin-bottom:10px;color:var(--muted2);line-height:1.75;font-size:0.92rem}
+ul li::before{content:'';position:absolute;left:0;top:0.7em;width:8px;height:1px;background:var(--cyan)}
+em{color:var(--text);font-style:normal;letter-spacing:0.01em}
+
+a{color:var(--cyan);text-decoration:none;border-bottom:1px solid rgba(0,212,255,0.3);transition:all 0.2s}
+a:hover{border-bottom-color:var(--cyan);color:#fff}
+
+.divider{height:1px;background:var(--bw);margin:48px 0 28px}
+.foot{font-family:'Rajdhani',sans-serif;font-size:0.7rem;letter-spacing:0.18em;text-transform:uppercase;color:var(--muted);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}
+.foot a{color:var(--muted2);border-bottom-color:transparent}
+.foot a:hover{color:var(--cyan)}
+
+@media(max-width:640px){
+  nav{padding:14px 20px}
+  main{padding:120px 22px 60px}
+  .lede{padding:18px 20px;font-size:0.95rem}
+}
+</style>
+</head>
+<body>
+<div class="bg-glow"></div>
+<div class="bg-grid"></div>
+
+<nav>
+  <a class="nav-logo" href="https://codingcrazy.io">
+    <span class="nav-logo-txt">Coding Crazy</span>
+  </a>
+  <a class="nav-link" href="https://codingcrazy.io">← All Apps</a>
+</nav>
+
+<main>
+  <div class="kicker"><span class="kicker-dot"></span>Pape · Privacy</div>
+  <h1>Privacy Policy</h1>
+  <div class="subtitle">Effective May 3, 2026</div>
+
+  <div class="lede">
+    <strong>Short version:</strong> Pape doesn't collect, store, or transmit any personal data. Your music catalog, contracts, splits, and Schedule A exports stay on your Mac. We don't run servers. We don't sell your data. We don't have your data.
+  </div>
+
+  <h2>What Pape Collects</h2>
+  <p><strong>Nothing.</strong> Pape is a fully local macOS application. It does not collect, transmit, or upload any personal data, usage analytics, telemetry, crash reports, identifiers, or device information to Coding Crazy or any third party.</p>
+
+  <h2>What Pape Stores On Your Mac</h2>
+  <p>Pape stores the following data <em>locally</em> in the app's sandbox container on your Mac:</p>
+  <ul>
+    <li>Your artist profile (legal name, stage name, IPI/CAE, PRO affiliation, publisher info, contact info you choose to enter)</li>
+    <li>Your song catalog (titles, ISRCs, UPCs, ISWCs, BPM, key, duration, genre, release dates, and any metadata you enter)</li>
+    <li>Writer and master credit splits per song</li>
+    <li>Your collaborator list (names, IPI numbers, PRO affiliations, contact info you enter)</li>
+    <li>Generated Schedule A and Split Sheet PDFs (only at file paths you choose via the system save panel)</li>
+  </ul>
+  <p>This data never leaves your device unless you explicitly export, share, or back it up yourself.</p>
+
+  <h2>Third-Party Services</h2>
+  <p>Pape v0.1 does not integrate with any third-party services, APIs, or analytics providers. Future versions may offer optional integrations (e.g., distributor or PRO connections), and if they do, those integrations will be opt-in, clearly labeled, and require your explicit authorization.</p>
+
+  <h2>Children's Privacy</h2>
+  <p>Pape is not directed to children under 13 and does not knowingly collect data from anyone, including children.</p>
+
+  <h2>Changes To This Policy</h2>
+  <p>If we ever change how Pape handles data, we'll update this policy and bump the effective date. Material changes will be communicated through the app and on this page.</p>
+
+  <h2>Contact</h2>
+  <p>Questions about this policy? Email <a href="mailto:tonyspark@codingcrazy.io">tonyspark@codingcrazy.io</a>.</p>
+
+  <div class="divider"></div>
+  <div class="foot">
+    <span>© 2026 Coding Crazy</span>
+    <a href="https://codingcrazy.io">codingcrazy.io</a>
+  </div>
+</main>
+
+</body>
+</html>
