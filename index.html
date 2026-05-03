@@ -214,6 +214,7 @@ function signup(id,btn){
   btn.textContent="You're on the list ✓";btn.style.opacity='0.75';inp.value='';inp.placeholder='Welcome! 🎉';
 }</script>
 
+<canvas id="cc-three" style="position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:0;opacity:0.7"></canvas>
 <canvas id="cc-particles" style="position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:1"></canvas>
 <script>
 (function(){
@@ -275,5 +276,171 @@ function signup(id,btn){
   }
   tick();
 })();
+</script>
+
+<script type="importmap">
+{
+  "imports": {
+    "three":           "https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.module.js",
+    "three/addons/":   "https://cdn.jsdelivr.net/npm/three@0.161.0/examples/jsm/"
+  }
+}
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+
+const canvas = document.getElementById('cc-three');
+const renderer = new THREE.WebGLRenderer({canvas, alpha:true, antialias:true});
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, window.innerWidth < 760 ? 1.5 : 2));
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+
+const scene = new THREE.Scene();
+scene.fog = new THREE.FogExp2(0x000000, 0.05);
+const camera = new THREE.PerspectiveCamera(50, window.innerWidth/window.innerHeight, 0.1, 100);
+camera.position.set(0, 0, 12);
+
+scene.add(new THREE.AmbientLight(0xffffff, 0.3));
+const cyanLight = new THREE.PointLight(0x00d4ff, 2.0, 30); cyanLight.position.set(-5, 3, 4); scene.add(cyanLight);
+const purpleLight = new THREE.PointLight(0xb94fff, 1.6, 30); purpleLight.position.set(5, -2, 3); scene.add(purpleLight);
+const dirLight = new THREE.DirectionalLight(0xffffff, 0.7); dirLight.position.set(2, 5, 4); scene.add(dirLight);
+
+const shapes = [];
+function addShape(geo, color, emissive, pos, rotSpeed, bobSpeed){
+  const m = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({
+    color, emissive, emissiveIntensity: 0.45, metalness: 0.85, roughness: 0.25,
+    transparent: true, opacity: 0.92,
+  }));
+  m.position.copy(pos);
+  m.userData = {rotSpeed, bobSpeed, basePos: pos.clone()};
+  scene.add(m);
+  shapes.push(m);
+  return m;
+}
+
+addShape(new THREE.IcosahedronGeometry(2.4, 0), 0x2a1545, 0x4c1d95,
+         new THREE.Vector3(-6, 1.5, -8), new THREE.Vector3(0.05, 0.08, 0.02), 0.3);
+addShape(new THREE.TorusKnotGeometry(1.4, 0.36, 96, 16, 2, 3), 0x002a3a, 0x00d4ff,
+         new THREE.Vector3(7, -1, -7), new THREE.Vector3(0.06, 0.10, 0.04), 0.4);
+addShape(new THREE.DodecahedronGeometry(1.0, 0), 0x2a0a3a, 0xb94fff,
+         new THREE.Vector3(-3.5, -2.5, -2), new THREE.Vector3(0.10, 0.14, 0.08), 0.5);
+addShape(new THREE.OctahedronGeometry(0.7, 0), 0x3a2a00, 0xc9a84c,
+         new THREE.Vector3(4, 2.8, -1), new THREE.Vector3(0.18, 0.12, 0.08), 0.7);
+
+const ringMat = new THREE.MeshBasicMaterial({color:0x00d4ff, wireframe:true, transparent:true, opacity:0.45});
+const ring = new THREE.Mesh(new THREE.TorusGeometry(0.5, 0.18, 16, 80), ringMat);
+ring.position.set(2, -1, 4);
+ring.userData = {rotSpeed: new THREE.Vector3(0.3, 0.5, 0.1), bobSpeed: 0.8, basePos: ring.position.clone()};
+scene.add(ring);
+shapes.push(ring);
+
+const starGeo = new THREE.BufferGeometry();
+const starPositions = new Float32Array(400 * 3);
+for (let i = 0; i < 400; i++) {
+  starPositions[i*3]   = (Math.random()-0.5) * 60;
+  starPositions[i*3+1] = (Math.random()-0.5) * 40;
+  starPositions[i*3+2] = -10 - Math.random() * 30;
+}
+starGeo.setAttribute('position', new THREE.BufferAttribute(starPositions, 3));
+const stars = new THREE.Points(starGeo, new THREE.PointsMaterial({
+  color: 0xa78bfa, size: 0.04, transparent:true, opacity:0.7, blending: THREE.AdditiveBlending
+}));
+scene.add(stars);
+
+const composer = new EffectComposer(renderer);
+composer.setPixelRatio(Math.min(window.devicePixelRatio, window.innerWidth < 760 ? 1.5 : 2));
+composer.setSize(window.innerWidth, window.innerHeight);
+composer.addPass(new RenderPass(scene, camera));
+
+const PassShader = {
+  uniforms: { tDiffuse: { value: null }, uResolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) }, uTime: { value: 0 } },
+  vertexShader: `varying vec2 vUv;void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}`,
+  fragmentShader: `
+    uniform sampler2D tDiffuse;uniform vec2 uResolution;uniform float uTime;varying vec2 vUv;
+    void main(){
+      vec2 dir=vUv-0.5;float dist=length(dir);
+      float chroma=0.0006+0.0018*dist;
+      vec3 col;
+      col.r=texture2D(tDiffuse,vUv+dir*chroma*1.4).r;
+      col.g=texture2D(tDiffuse,vUv).g;
+      col.b=texture2D(tDiffuse,vUv-dir*chroma*1.4).b;
+      col=floor(col*32.0)/32.0;
+      float vig=smoothstep(0.95,0.3,dist);
+      col*=mix(1.0,vig,0.25);
+      gl_FragColor=vec4(col,1.0);
+    }`
+};
+const pass = new ShaderPass(PassShader);
+composer.addPass(pass);
+composer.addPass(new OutputPass());
+
+let mouseX=0, mouseY=0, targetX=0, targetY=0, scrollY=0;
+window.addEventListener('mousemove', e => {
+  targetX = (e.clientX/window.innerWidth - 0.5) * 2;
+  targetY = (e.clientY/window.innerHeight - 0.5) * 2;
+});
+window.addEventListener('touchmove', e => {
+  if (!e.touches[0]) return;
+  targetX = (e.touches[0].clientX/window.innerWidth - 0.5) * 2;
+  targetY = (e.touches[0].clientY/window.innerHeight - 0.5) * 2;
+}, {passive: true});
+
+function attachGyro(){
+  window.addEventListener('deviceorientation', e => {
+    if (e.gamma == null || e.beta == null) return;
+    targetX = Math.max(-1, Math.min(1, e.gamma / 30));
+    targetY = Math.max(-1, Math.min(1, (e.beta - 45) / 45));
+  }, true);
+}
+if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+  const handler = () => {
+    DeviceOrientationEvent.requestPermission().then(s => { if (s === 'granted') attachGyro(); }).catch(()=>{});
+    document.removeEventListener('touchstart', handler);
+    document.removeEventListener('click', handler);
+  };
+  document.addEventListener('touchstart', handler, {once: true});
+  document.addEventListener('click', handler, {once: true});
+} else if (window.DeviceOrientationEvent) {
+  attachGyro();
+}
+
+window.addEventListener('scroll', ()=>{ scrollY = window.scrollY; }, {passive:true});
+window.addEventListener('resize', ()=>{
+  camera.aspect = window.innerWidth/window.innerHeight; camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  composer.setSize(window.innerWidth, window.innerHeight);
+  pass.uniforms.uResolution.value.set(window.innerWidth, window.innerHeight);
+});
+
+const clock = new THREE.Clock();
+function animate(){
+  const t = clock.getElapsedTime();
+  mouseX += (targetX-mouseX) * 0.04;
+  mouseY += (targetY-mouseY) * 0.04;
+  camera.position.x = mouseX * 0.7;
+  camera.position.y = -mouseY * 0.5;
+  camera.position.z = 12 - scrollY * 0.002;
+  camera.lookAt(0, 0, 0);
+  for (const s of shapes) {
+    s.rotation.x += s.userData.rotSpeed.x * 0.01;
+    s.rotation.y += s.userData.rotSpeed.y * 0.01;
+    s.rotation.z += s.userData.rotSpeed.z * 0.01;
+    s.position.y = s.userData.basePos.y + Math.sin(t * s.userData.bobSpeed) * 0.18;
+  }
+  stars.rotation.y = t * 0.015;
+  stars.rotation.x = Math.sin(t * 0.02) * 0.05;
+  pass.uniforms.uTime.value = t;
+  composer.render();
+  requestAnimationFrame(animate);
+}
+animate();
+
+if (matchMedia('(prefers-reduced-motion: reduce)').matches){
+  canvas.style.display = 'none';
+}
 </script>
 </body></html>
