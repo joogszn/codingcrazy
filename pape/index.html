@@ -25,7 +25,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:1000;display:flex;align-items:ce
 .nav-link:hover{color:var(--cyan)}
 @media(max-width:640px){nav{padding:14px 20px}}
 
-#three-canvas{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:0;opacity:0.95}
+#three-canvas{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:0;opacity:0.7}
 #particles{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:1}
 .bg-grid{position:fixed;inset:0;background-image:linear-gradient(rgba(255,255,255,0.025) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.025) 1px,transparent 1px);background-size:64px 64px;mask-image:radial-gradient(ellipse 100% 90% at 50% 30%,black 30%,transparent 100%);pointer-events:none;z-index:0}
 .bg-vignette{position:fixed;inset:0;background:radial-gradient(circle at 50% 30%,transparent 0%,transparent 40%,rgba(0,0,0,0.7) 100%);pointer-events:none;z-index:2}
@@ -195,7 +195,7 @@ const cyanRim = new THREE.PointLight(0xb94fff, 0.4, 28); cyanRim.position.set(-3
 
 // ---------------- TRIFECTA (paper / vinyl / coins) — pushed back -----------
 const trifecta = new THREE.Group();
-trifecta.position.z = -2;
+trifecta.position.z = -4;
 scene.add(trifecta);
 
 {
@@ -263,7 +263,8 @@ const RAJDHANI_FONT = 'https://cdn.jsdelivr.net/npm/@fontsource/rajdhani@5.0.16/
 const title = new Text();
 title.text = 'PAPE';
 title.font = RAJDHANI_FONT;
-title.fontSize = 3.6;
+const titleScale = window.matchMedia('(max-width: 760px)').matches ? 2.4 : 3.6;
+title.fontSize = titleScale;
 title.letterSpacing = 0.06;
 title.anchorX = 'center';
 title.anchorY = 'middle';
@@ -285,23 +286,23 @@ titleGroup.add(title);
 const titleGhost = new Text();
 titleGhost.text = 'PAPE';
 titleGhost.font = RAJDHANI_FONT;
-titleGhost.fontSize = 3.6;
+titleGhost.fontSize = titleScale;
 titleGhost.letterSpacing = 0.06;
 titleGhost.anchorX = 'center';
 titleGhost.anchorY = 'middle';
 titleGhost.position.set(0.04, 1.4, 2.4);
-titleGhost.material = new THREE.MeshBasicMaterial({color: 0x00d4ff, transparent:true, opacity:0.18});
+titleGhost.material = new THREE.MeshBasicMaterial({color: 0x00d4ff, transparent:true, opacity:0.10});
 titleGroup.add(titleGhost);
 
 const titlePurple = new Text();
 titlePurple.text = 'PAPE';
 titlePurple.font = RAJDHANI_FONT;
-titlePurple.fontSize = 3.6;
+titlePurple.fontSize = titleScale;
 titlePurple.letterSpacing = 0.06;
 titlePurple.anchorX = 'center';
 titlePurple.anchorY = 'middle';
 titlePurple.position.set(-0.04, 1.4, 2.4);
-titlePurple.material = new THREE.MeshBasicMaterial({color: 0xb94fff, transparent:true, opacity:0.16});
+titlePurple.material = new THREE.MeshBasicMaterial({color: 0xb94fff, transparent:true, opacity:0.09});
 titleGroup.add(titlePurple);
 
 // Sync all three text meshes, then hide CSS H1 once visible
@@ -328,11 +329,11 @@ const CinematicShader = {
     tDiffuse: { value: null },
     uResolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) },
     uTime: { value: 0 },
-    uPixelSize: { value: 4.0 },
-    uChromaStrength: { value: 1.0 },
-    uDitherStrength: { value: 0.55 },
-    uPosterize: { value: 9.0 },
-    uVignette: { value: 0.55 },
+    uPixelSize: { value: 2.5 },
+    uChromaStrength: { value: 0.5 },
+    uDitherStrength: { value: 0.18 },
+    uPosterize: { value: 24.0 },
+    uVignette: { value: 0.35 },
   },
   vertexShader: `
     varying vec2 vUv;
@@ -391,11 +392,7 @@ const CinematicShader = {
       float dither = bayer4(pixCoord) - 0.5;
       col += dither * uDitherStrength * 0.07;
 
-      // 5) Subtle scan-line pulse, time-varying
-      float scan = sin(vUv.y * uResolution.y * 0.5 - uTime * 1.4) * 0.025;
-      col += scan;
-
-      // 6) Vignette
+      // 5) Vignette
       float vig = smoothstep(0.95, 0.25, dist);
       col *= mix(1.0, vig, uVignette);
 
@@ -415,6 +412,11 @@ window.addEventListener('mousemove', e => {
   targetX = (e.clientX / window.innerWidth - 0.5) * 2;
   targetY = (e.clientY / window.innerHeight - 0.5) * 2;
 });
+window.addEventListener('touchmove', e => {
+  if (!e.touches[0]) return;
+  targetX = (e.touches[0].clientX / window.innerWidth - 0.5) * 2;
+  targetY = (e.touches[0].clientY / window.innerHeight - 0.5) * 2;
+}, {passive: true});
 window.addEventListener('scroll', () => { scrollY = window.scrollY; }, {passive:true});
 window.addEventListener('resize', () => {
   camera.aspect = window.innerWidth/window.innerHeight;
@@ -451,7 +453,7 @@ function animate() {
   camera.lookAt(0, 0, 0);
 
   cinematicPass.uniforms.uTime.value = t;
-  composer.render();
+  if (window.innerWidth < 760) renderer.render(scene, camera); else composer.render();
   requestAnimationFrame(animate);
 }
 animate();
@@ -465,7 +467,8 @@ function sizeP() { pcanvas.width = window.innerWidth; pcanvas.height = window.in
 sizeP();
 window.addEventListener('resize', sizeP);
 
-const particles = Array.from({length: 60}, () => ({
+const isMobile = window.matchMedia('(max-width: 760px)').matches;
+const particles = Array.from({length: isMobile ? 14 : 28}, () => ({
   x: Math.random() * window.innerWidth,
   y: Math.random() * window.innerHeight,
   vy: -0.15 - Math.random() * 0.4,
