@@ -309,34 +309,64 @@ const cyanLight = new THREE.PointLight(0x00d4ff, 2.0, 30); cyanLight.position.se
 const purpleLight = new THREE.PointLight(0xb94fff, 1.6, 30); purpleLight.position.set(5, -2, 3); scene.add(purpleLight);
 const dirLight = new THREE.DirectionalLight(0xffffff, 0.7); dirLight.position.set(2, 5, 4); scene.add(dirLight);
 
+// FLOATING APP TILES — actual Coding Crazy apps as semantic 3D sprites
 const shapes = [];
-function addShape(geo, color, emissive, pos, rotSpeed, bobSpeed){
-  const m = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({
-    color, emissive, emissiveIntensity: 0.45, metalness: 0.85, roughness: 0.25,
-    transparent: true, opacity: 0.92,
-  }));
-  m.position.copy(pos);
-  m.userData = {rotSpeed, bobSpeed, basePos: pos.clone()};
-  scene.add(m);
-  shapes.push(m);
-  return m;
+function makeAppTexture(emoji, label, accent){
+  const c = document.createElement('canvas');
+  c.width = c.height = 256;
+  const x = c.getContext('2d');
+  x.fillStyle = '#08090d';
+  const r = 36;
+  x.beginPath();
+  x.moveTo(r,0); x.lineTo(256-r,0); x.quadraticCurveTo(256,0,256,r);
+  x.lineTo(256,256-r); x.quadraticCurveTo(256,256,256-r,256);
+  x.lineTo(r,256); x.quadraticCurveTo(0,256,0,256-r);
+  x.lineTo(0,r); x.quadraticCurveTo(0,0,r,0);
+  x.closePath(); x.fill();
+  const g = x.createRadialGradient(128, 96, 12, 128, 128, 180);
+  g.addColorStop(0, accent + 'cc');
+  g.addColorStop(1, 'transparent');
+  x.fillStyle = g; x.fill();
+  x.font = '128px -apple-system, "Apple Color Emoji", sans-serif';
+  x.textAlign = 'center'; x.textBaseline = 'middle';
+  x.fillText(emoji, 128, 124);
+  x.fillStyle = accent;
+  x.font = 'bold 22px Rajdhani, -apple-system, sans-serif';
+  x.fillText(label.toUpperCase(), 128, 220);
+  x.strokeStyle = 'rgba(255,255,255,0.06)'; x.lineWidth = 2; x.stroke();
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.anisotropy = 4;
+  return tex;
 }
-
-addShape(new THREE.IcosahedronGeometry(2.4, 0), 0x2a1545, 0x4c1d95,
-         new THREE.Vector3(-6, 1.5, -8), new THREE.Vector3(0.05, 0.08, 0.02), 0.3);
-addShape(new THREE.TorusKnotGeometry(1.4, 0.36, 96, 16, 2, 3), 0x002a3a, 0x00d4ff,
-         new THREE.Vector3(7, -1, -7), new THREE.Vector3(0.06, 0.10, 0.04), 0.4);
-addShape(new THREE.DodecahedronGeometry(1.0, 0), 0x2a0a3a, 0xb94fff,
-         new THREE.Vector3(-7, -4, -5), new THREE.Vector3(0.10, 0.14, 0.08), 0.5);
-addShape(new THREE.OctahedronGeometry(0.5, 0), 0x1a1408, 0x6e5a2c,
-         new THREE.Vector3(9, 5.5, -6), new THREE.Vector3(0.18, 0.12, 0.08), 0.7);
-
-const ringMat = new THREE.MeshBasicMaterial({color:0x00d4ff, wireframe:true, transparent:true, opacity:0.45});
-const ring = new THREE.Mesh(new THREE.TorusGeometry(0.5, 0.18, 16, 80), ringMat);
-ring.position.set(5, -3, 3);
-ring.userData = {rotSpeed: new THREE.Vector3(0.3, 0.5, 0.1), bobSpeed: 0.8, basePos: ring.position.clone()};
-scene.add(ring);
-shapes.push(ring);
+function addAppTile(texture, pos, scale, bobSpeed, rotPhase, href, label){
+  const mat = new THREE.SpriteMaterial({map: texture, transparent: true, opacity: 0.92, depthTest: true, depthWrite: false});
+  const sprite = new THREE.Sprite(mat);
+  sprite.position.copy(pos);
+  sprite.scale.set(scale, scale, scale);
+  sprite.userData = {bobSpeed, rotPhase, basePos: pos.clone(), href, label, baseOpacity: 0.92};
+  scene.add(sprite); shapes.push(sprite); return sprite;
+}
+const APPS = [
+  { emoji: '\ud83c\udfae', label: 'SideQuests', accent: '#a78bfa', pos: [-6, 2.0, -8],  scale: 2.6, bob: 0.32, href: 'sidequests/' },
+  { emoji: '\ud83d\uddc2\ufe0f', label: 'Sortr', accent: '#00d4ff', pos: [ 7, -1.5, -7], scale: 2.4, bob: 0.45, href: 'sortr.html' },
+  { emoji: '\ud83c\udfa7', label: 'ARC',       accent: '#f59e0b', pos: [-7, -3.5, -5], scale: 2.0, bob: 0.55, href: 'arc.html' },
+  { emoji: '\ud83e\ude99', label: 'Pape',      accent: '#D4AF37', pos: [ 5, 4.0, -3],  scale: 1.7, bob: 0.65, href: 'pape/' },
+  { emoji: '\ud83e\udd16', label: 'Mark1',     accent: '#22c55e', pos: [-2, -2.5, 1],  scale: 1.4, bob: 0.75, href: '#' },
+];
+const sprites = [];
+APPS.forEach((a, i) => {
+  const tex = makeAppTexture(a.emoji, a.label, a.accent);
+  const s = addAppTile(tex, new THREE.Vector3(...a.pos), a.scale, a.bob, i * 0.7, a.href, a.label);
+  sprites.push(s);
+});
+const linePts = APPS.map(a => new THREE.Vector3(...a.pos));
+const lineSegs = [];
+for (let i = 0; i < linePts.length; i++) lineSegs.push(linePts[i], linePts[(i + 1) % linePts.length]);
+const lineGeo = new THREE.BufferGeometry().setFromPoints(lineSegs);
+const lineMat = new THREE.LineBasicMaterial({color:0xb94fff, transparent:true, opacity:0.10});
+const constellation = new THREE.LineSegments(lineGeo, lineMat);
+scene.add(constellation);
 
 const starGeo = new THREE.BufferGeometry();
 const starPositions = new Float32Array(400 * 3);
@@ -426,10 +456,9 @@ function animate(){
   camera.position.z = 12 - scrollY * 0.002;
   camera.lookAt(0, 0, 0);
   for (const s of shapes) {
-    s.rotation.x += s.userData.rotSpeed.x * 0.01;
-    s.rotation.y += s.userData.rotSpeed.y * 0.01;
-    s.rotation.z += s.userData.rotSpeed.z * 0.01;
-    s.position.y = s.userData.basePos.y + Math.sin(t * s.userData.bobSpeed) * 0.18;
+    s.position.y = s.userData.basePos.y + Math.sin(t * s.userData.bobSpeed + s.userData.rotPhase) * 0.32;
+    s.position.x = s.userData.basePos.x + Math.cos(t * s.userData.bobSpeed * 0.6 + s.userData.rotPhase) * 0.18;
+    s.material.opacity = s.userData.baseOpacity * (0.85 + Math.sin(t * s.userData.bobSpeed * 1.2) * 0.12);
   }
   stars.rotation.y = t * 0.015;
   stars.rotation.x = Math.sin(t * 0.02) * 0.05;
@@ -438,6 +467,29 @@ function animate(){
   requestAnimationFrame(animate);
 }
 animate();
+
+const raycaster = new THREE.Raycaster();
+const pointer = new THREE.Vector2();
+function onCanvasClick(e){
+  const rect = canvas.getBoundingClientRect();
+  pointer.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+  pointer.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+  raycaster.setFromCamera(pointer, camera);
+  const hits = raycaster.intersectObjects(sprites);
+  if (hits.length > 0 && hits[0].object.userData.href && hits[0].object.userData.href !== '#'){
+    window.location.href = hits[0].object.userData.href;
+  }
+}
+canvas.style.pointerEvents = 'auto';
+canvas.addEventListener('click', onCanvasClick);
+canvas.addEventListener('mousemove', e => {
+  const rect = canvas.getBoundingClientRect();
+  pointer.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+  pointer.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+  raycaster.setFromCamera(pointer, camera);
+  const hits = raycaster.intersectObjects(sprites);
+  canvas.style.cursor = hits.length > 0 ? 'pointer' : '';
+});
 
 if (matchMedia('(prefers-reduced-motion: reduce)').matches){
   canvas.style.display = 'none';
