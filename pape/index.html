@@ -544,8 +544,23 @@ const particles = Array.from({length: isMobile ? 22 : 28}, () => ({
   hue: Math.random() < 0.7 ? 'gold' : 'cyan'
 }));
 
+// Subtle gold coin layer — very faint, slow-spinning, rare
+const coinCount = isMobile ? 4 : 7;
+const coins = Array.from({length: coinCount}, () => ({
+  x: Math.random() * window.innerWidth,
+  y: Math.random() * window.innerHeight,
+  vy: -0.06 - Math.random() * 0.10,
+  vx: (Math.random() - 0.5) * 0.05,
+  r: 4 + Math.random() * 3,
+  rot: Math.random() * Math.PI,
+  rotSpeed: 0.005 + Math.random() * 0.012,
+  a: 0.05 + Math.random() * 0.06,  // very faint
+}));
+
 function drawParticles() {
   pctx.clearRect(0, 0, pcanvas.width, pcanvas.height);
+
+  // Particles (existing)
   for (const p of particles) {
     p.x += p.vx; p.y += p.vy;
     if (p.y < -10) { p.y = pcanvas.height + 10; p.x = Math.random() * pcanvas.width; }
@@ -563,6 +578,35 @@ function drawParticles() {
     pctx.shadowBlur = 8;
     pctx.fill();
   }
+
+  // Gold coin layer — spinning ellipse with radial gradient face
+  pctx.shadowBlur = 12;
+  for (const c of coins) {
+    c.x += c.vx; c.y += c.vy; c.rot += c.rotSpeed;
+    if (c.y < -20) { c.y = pcanvas.height + 20; c.x = Math.random() * pcanvas.width; }
+    if (c.x < -20) c.x = pcanvas.width + 20;
+    if (c.x > pcanvas.width + 20) c.x = -20;
+
+    const sy = Math.abs(Math.cos(c.rot));
+    pctx.save();
+    pctx.translate(c.x, c.y);
+    pctx.scale(1, Math.max(sy, 0.08));  // never fully flat — keeps a sliver visible
+    const grd = pctx.createRadialGradient(-c.r * 0.25, -c.r * 0.25, 0, 0, 0, c.r);
+    grd.addColorStop(0, `rgba(232,199,102,${c.a * 1.4})`);   // bright highlight
+    grd.addColorStop(0.5, `rgba(201,168,76,${c.a})`);         // mid gold
+    grd.addColorStop(1, `rgba(120,90,30,${c.a * 0.6})`);      // dim edge
+    pctx.fillStyle = grd;
+    pctx.shadowColor = 'rgba(212,175,55,0.4)';
+    pctx.beginPath();
+    pctx.arc(0, 0, c.r, 0, Math.PI * 2);
+    pctx.fill();
+    // Tiny rim line
+    pctx.strokeStyle = `rgba(232,199,102,${c.a * 0.8})`;
+    pctx.lineWidth = 0.4;
+    pctx.stroke();
+    pctx.restore();
+  }
+
   requestAnimationFrame(drawParticles);
 }
 drawParticles();
